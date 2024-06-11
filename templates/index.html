@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Raspberry Pi Script Runner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <h1>Raspberry Pi Script Runner</h1>
+    <select id="scriptSelector">
+        {% for file in files %}
+        <option value="{{ file }}">{{ file }}</option>
+        {% endfor %}
+    </select>
+    <button id="startButton">Start Script</button>
+    <button id="stopButton">Stop Script</button>
+    <pre id="output"></pre>
+
+    <script>
+        $(document).ready(function () {
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            $('#startButton').click(function () {
+                var selectedFile = $('#scriptSelector').val();
+                $('#output').text(''); // Clear output area
+                socket.emit('start_script', { filename: selectedFile });
+            });
+
+            $('#stopButton').click(function () {
+                socket.emit('stop_script');
+            });
+
+            socket.on('script_output', function (data) {
+                $('#output').append(data.output); // Append new output
+            });
+        });
+    </script>
+</body>
+
+</html>
